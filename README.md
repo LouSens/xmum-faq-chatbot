@@ -661,28 +661,28 @@ The following issues were identified through static code analysis of this reposi
 
 | # | Issue | Location | Impact |
 |---|-------|----------|--------|
-| 1 | **Hardcoded relative paths in NLP modules** | `nlp/classifier.py` L4, `nlp/vectorizer.py` L4, `nlp/retriever.py` L5–6 | Default path constants (`"models/svm_classifier.pkl"`) are relative to the CWD, not the script's directory. This works only if the process is started from the project root. Calling from another CWD will raise `FileNotFoundError`. |
-| 2 | **No NLTK data download check** | `nlp/preprocessor.py` L3–5 | If `punkt`, `stopwords`, or `wordnet` are not downloaded, the import silently succeeds but `word_tokenize()` raises `LookupError` at runtime, crashing the server with a 500 error and no useful user-facing message. |
-| 3 | **Evaluate script uses relative paths** | `training/evaluate.py` L16–17 | `CORPUS_PATH = "data/uni_faq_corpus.json"` and `REPORTS_DIR = "training"` are relative; the script must be run from the project root. Running with `python training/evaluate.py` from the `training/` directory will fail. |
+| 1 | **✅Hardcoded relative paths in NLP modules** | `nlp/classifier.py` L4, `nlp/vectorizer.py` L4, `nlp/retriever.py` L5–6 | Default path constants (`"models/svm_classifier.pkl"`) are relative to the CWD, not the script's directory. This works only if the process is started from the project root. Calling from another CWD will raise `FileNotFoundError`. |
+| 2 | **✅No NLTK data download check** | `nlp/preprocessor.py` L3–5 | If `punkt`, `stopwords`, or `wordnet` are not downloaded, the import silently succeeds but `word_tokenize()` raises `LookupError` at runtime, crashing the server with a 500 error and no useful user-facing message. |
+| 3 | **✅Evaluate script uses relative paths** | `training/evaluate.py` L16–17 | `CORPUS_PATH = "data/uni_faq_corpus.json"` and `REPORTS_DIR = "training"` are relative; the script must be run from the project root. Running with `python training/evaluate.py` from the `training/` directory will fail. |
 
 ### 🟡 Semantic / Logic Issues
 
 | # | Issue | Location | Impact |
 |---|-------|----------|--------|
-| 4 | **SVM confidence score is unused in gating** | `nlp/pipeline.py` L41, L47 | The SVM's `svm_confidence` is captured but the threshold gate only checks `similarity_score` (cosine). This means a high-SVM-confidence / low-cosine prediction still falls back. Conversely, a low-SVM-confidence / high-cosine match may be returned. A combined scoring strategy would be more robust. |
-| 5 | **`out_of_scope` intent can still retrieve an answer** | `nlp/retriever.py` L27–34, `nlp/pipeline.py` L47 | The `retrieve()` function will attempt to match against `out_of_scope` corpus entries. If the predicted intent is `out_of_scope` but cosine score is ≥ 0.3, the pipeline.py condition `predicted_intent != "out_of_scope"` correctly blocks it — but `retriever.retrieve()` has already performed unnecessary work. |
-| 6 | **`appendMessage` metadata parameter is silently ignored** | `templates/index.html` L800–803 | The API returns `intent` and `confidence` per response. The `appendMessage()` function accepts a `metadata` argument and constructs intent/confidence pills in the UI spec, but the conditional block building the pill HTML is missing — metadata is never displayed. |
+| 4 | **✅SVM confidence score is unused in gating** | `nlp/pipeline.py` L41, L47 | The SVM's `svm_confidence` is captured but the threshold gate only checks `similarity_score` (cosine). This means a high-SVM-confidence / low-cosine prediction still falls back. Conversely, a low-SVM-confidence / high-cosine match may be returned. A combined scoring strategy would be more robust. |
+| 5 | **✅`out_of_scope` intent can still retrieve an answer** | `nlp/retriever.py` L27–34, `nlp/pipeline.py` L47 | The `retrieve()` function will attempt to match against `out_of_scope` corpus entries. If the predicted intent is `out_of_scope` but cosine score is ≥ 0.3, the pipeline.py condition `predicted_intent != "out_of_scope"` correctly blocks it — but `retriever.retrieve()` has already performed unnecessary work. |
+| 6 | **✅`appendMessage` metadata parameter is silently ignored** | `templates/index.html` L800–803 | The API returns `intent` and `confidence` per response. The `appendMessage()` function accepts a `metadata` argument and constructs intent/confidence pills in the UI spec, but the conditional block building the pill HTML is missing — metadata is never displayed. |
 | 7 | **Typo in frontend suggestion text** | `templates/index.html` L644 | `"How much is the tuition fee in XMUM??"` has a double question mark. Minor, but visible to users. |
-| 8 | **`pandas` listed as dependency but not used in core code** | `requirements.txt` L6 | `pandas` is imported nowhere in `api/`, `nlp/`, or `training/`. The `corpus_flat.csv` is written using Python's built-in `csv` module. This adds ~40 MB of unnecessary installation overhead. |
-| 9 | **No `__init__.py` in `nlp/` or `api/` packages** | `nlp/`, `api/` | Both directories lack `__init__.py` files. Python package resolution works due to `sys.path.insert(0, ROOT_DIR)` hacks spread across multiple files. This is fragile and non-standard; explicit package files should be used. |
-| 10 | **Global mutable state via module-level singletons** | `nlp/classifier.py`, `nlp/vectorizer.py`, `nlp/retriever.py` | Models are stored as module-level globals (`_model`, `_vectorizer`, `_faq_vectors`). This is not thread-safe. Under Flask's multi-threaded WSGI deployment (e.g., with Gunicorn), concurrent writes during initialisation could cause race conditions. |
+| 8 | **✅`pandas` listed as dependency but not used in core code** | `requirements.txt` L6 | `pandas` is imported nowhere in `api/`, `nlp/`, or `training/`. The `corpus_flat.csv` is written using Python's built-in `csv` module. This adds ~40 MB of unnecessary installation overhead. |
+| 9 | **✅No `__init__.py` in `nlp/` or `api/` packages** | `nlp/`, `api/` | Both directories lack `__init__.py` files. Python package resolution works due to `sys.path.insert(0, ROOT_DIR)` hacks spread across multiple files. This is fragile and non-standard; explicit package files should be used. |
+| 10 | **✅Global mutable state via module-level singletons** | `nlp/classifier.py`, `nlp/vectorizer.py`, `nlp/retriever.py` | Models are stored as module-level globals (`_model`, `_vectorizer`, `_faq_vectors`). This is not thread-safe. Under Flask's multi-threaded WSGI deployment (e.g., with Gunicorn), concurrent writes during initialisation could cause race conditions. |
 
 ### 🟢 Minor / Cosmetic
 
 | # | Issue | Location | Impact |
 |---|-------|----------|--------|
 | 11 | **`btn-theme-toggle` ID mismatch** | `templates/index.html` L621 | The health check button has `id="btn-theme-toggle"` but its function is `checkAppHealth()`. The ID implies a theme toggle that does not exist. |
-| 12 | **`static` folder referenced but not created** | `api/app.py` L18–19 | The Flask app declares `static_folder=".../static"`, but the `static/` directory is in `.gitignore` and does not exist. This causes a non-fatal warning but will silently fail if static assets are ever expected. |
+| 12 | **✅`static` folder referenced but not created** | `api/app.py` L18–19 | The Flask app declares `static_folder=".../static"`, but the `static/` directory is in `.gitignore` and does not exist. This causes a non-fatal warning but will silently fail if static assets are ever expected. |
 | 13 | **No rate limiting** | `api/routes.py` | The `/chat` endpoint has no throttling. Repeated rapid requests could lead to CPU spikes given the synchronous SVM inference. |
 
 ---
