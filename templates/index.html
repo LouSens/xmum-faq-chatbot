@@ -451,26 +451,6 @@
 
     .user-message-row .msg-meta { text-align: right; }
 
-    /* matched question badge */
-    .matched-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      background: var(--surface-muted);
-      border: 1px solid var(--border-subtle);
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      margin-top: 2px;
-      max-width: 100%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .matched-badge i { color: var(--brand-gold); font-size: 0.65rem; }
-
     /* ── Typing indicator ──────────────────────────────────── */
     .typing-indicator {
       display: flex;
@@ -811,9 +791,6 @@
           </div>
         </div>
         <div class="chat-header-actions">
-          <button class="btn-icon" id="btn-health" title="System Status" onclick="checkAppHealth()">
-            <i class="fa-solid fa-heart-pulse"></i>
-          </button>
           <button class="btn-icon" id="btn-clear-chat" title="Clear Conversation" onclick="clearConversation()">
             <i class="fa-solid fa-trash-can"></i>
           </button>
@@ -910,18 +887,6 @@
       }
     }
 
-    async function checkAppHealth() {
-      try {
-        const res  = await fetch('/health');
-        const data = await res.json();
-        alert(data.status === 'ok'
-          ? `✅ System Status: OK\nModels loaded: ${data.models_loaded}`
-          : '⚠️ Unexpected health status from server.');
-      } catch (e) {
-        alert('❌ Could not reach the server. Is the app running?');
-      }
-    }
-
     function sendSuggestion(text) {
       if (isWaiting) return;
       userInputField.value = text;
@@ -981,15 +946,6 @@
       bubble.className = 'message-bubble';
       bubble.textContent = text;
       content.appendChild(bubble);
-
-      // Show matched question badge for bot replies
-      if (!isUser && matchedQuestion) {
-        const badge = document.createElement('div');
-        badge.className = 'matched-badge';
-        badge.innerHTML = `<i class="fa-solid fa-crosshairs"></i> ${matchedQuestion}`;
-        badge.title = `Matched question: ${matchedQuestion}`;
-        content.appendChild(badge);
-      }
 
       const meta = document.createElement('div');
       meta.className = 'msg-meta';

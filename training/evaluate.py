@@ -9,6 +9,7 @@ import numpy as np
 from sklearn.svm import SVC
 from sklearn.model_selection import StratifiedKFold, cross_val_predict
 from sklearn.metrics import classification_report, confusion_matrix
+import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -69,6 +70,7 @@ def main():
 
     print("\nGenerating classification report (cross-val predictions)...")
     y_pred = cross_val_predict(model, X, y, cv=skf)
+    report = classification_report(y, y_pred, zero_division=0, output_dict=True)
     print(classification_report(y, y_pred, zero_division=0))
 
     print("Saving confusion matrix...")
@@ -94,6 +96,66 @@ def main():
     plt.savefig(cm_path, dpi=150)
     plt.close()
     print(f"Confusion matrix saved to {cm_path}")
+
+    # ------------------------------------------------------------------ #
+    # Per-class Precision / Recall / F1 bar chart                         #
+    # ------------------------------------------------------------------ #
+    print("Saving per-class metrics chart...")
+
+    # Build a tidy dataframe from the classification report
+    skip_keys = {"accuracy", "macro avg", "weighted avg"}
+    metrics_rows = []
+    for cls, vals in report.items():
+        if cls in skip_keys:
+            continue
+        metrics_rows.append({
+            "Class": cls,
+            "Precision": vals["precision"],
+            "Recall": vals["recall"],
+            "F1-Score": vals["f1-score"],
+        })
+
+    df_metrics = pd.DataFrame(metrics_rows).set_index("Class")
+    df_metrics = df_metrics.sort_values("F1-Score", ascending=True)  # lowest F1 at top
+    df_melted = df_metrics.reset_index().melt(
+        id_vars="Class", var_name="Metric", value_name="Score"
+    )
+
+    # ---- Plot ----
+    palette = {"Precision": "#4C72B0", "Recall": "#DD8452", "F1-Score": "#55A868"}
+    n_classes = len(df_metrics)
+    fig_height = max(6, n_classes * 0.55)
+
+    sns.set_theme(style="whitegrid", font_scale=0.95)
+    fig, ax = plt.subplots(figsize=(10, fig_height))
+
+    sns.barplot(
+        data=df_melted,
+        y="Class",
+        x="Score",
+        hue="Metric",
+        palette=palette,
+        orient="h",
+        ax=ax,
+    )
+
+    ax.set_xlim(0, 1.05)
+    ax.set_xlabel("Score", fontsize=11)
+    ax.set_ylabel("Intent Class", fontsize=11)
+    ax.set_title(
+        "SVM Intent Classifier – Per-Class Metrics (5-Fold CV)",
+        fontsize=13,
+        fontweight="bold",
+        pad=12,
+    )
+    ax.axvline(x=1.0, color="grey", linewidth=0.8, linestyle="--", alpha=0.6)
+    ax.legend(title="Metric", bbox_to_anchor=(1.01, 1), loc="upper left", borderaxespad=0)
+    plt.tight_layout()
+
+    metrics_path = os.path.join(REPORTS_DIR, "per_class_metrics.png")
+    plt.savefig(metrics_path, dpi=150, bbox_inches="tight")
+    plt.close()
+    print(f"Per-class metrics chart saved to {metrics_path}")
 
     print("\nTesting confidence threshold values...")
     from sklearn.metrics.pairwise import cosine_similarity as cos_sim
