@@ -6,7 +6,7 @@ from nltk.corpus import stopwords
 def _ensure_nltk(resource, resource_type="corpora"):
     try:
         nltk.data.find(f"{resource_type}/{resource}")
-    except LookupError:
+    except (LookupError, OSError):
         nltk.download(resource, quiet=True)
 
 _ensure_nltk("punkt_tab",  "tokenizers")

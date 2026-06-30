@@ -4,283 +4,390 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ask XMUM</title>
+  <title>Ask XMUM — Admissions Assistant</title>
   <meta name="description"
     content="Get instant answers about Xiamen University Malaysia (XMUM) admissions, programs, fees, scholarships, and campus life using our AI-powered FAQ Chatbot.">
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
     rel="stylesheet">
-  <!-- FontAwesome for icons -->
+  <!-- FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
+    /* ── Design Tokens ─────────────────────────────────────── */
     :root {
-      --bg-gradient: linear-gradient(135deg, #090d16 0%, #111827 100%);
-      --glass-bg: rgba(17, 24, 39, 0.75);
-      --glass-border: rgba(255, 255, 255, 0.08);
-      --primary-gradient: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
-      --accent-blue: #38bdf8;
-      --accent-purple: #6366f1;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --bot-bubble-bg: #1f2937;
-      --user-bubble-gradient: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
-      --shadow-primary: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      /* XMUM brand — deep navy + gold */
+      --brand-navy:      #0d2149;
+      --brand-navy-mid:  #1a3a6b;
+      --brand-gold:      #c8973a;
+      --brand-gold-lt:   #f0c060;
+
+      /* Page background */
+      --page-bg:         #f4f6fa;
+      --page-bg-2:       #eef1f8;
+
+      /* Panel / card surfaces */
+      --surface-white:   #ffffff;
+      --surface-soft:    #f8f9fc;
+      --surface-muted:   #edf0f7;
+
+      /* Borders */
+      --border-subtle:   #dde2ef;
+      --border-mid:      #c5cce0;
+
+      /* Text */
+      --text-heading:    #0d2149;
+      --text-body:       #2e3a5c;
+      --text-muted:      #6b7a99;
+      --text-light:      #9aa3bb;
+
+      /* Bubbles */
+      --bot-bubble-bg:   #ffffff;
+      --bot-bubble-border: #dde2ef;
+      --user-bubble-bg:  linear-gradient(135deg, #0d2149 0%, #1a3a6b 100%);
+
+      /* Accent */
+      --accent-gold-glow: rgba(200, 151, 58, 0.18);
+      --accent-navy-glow: rgba(13, 33, 73, 0.08);
+
+      /* Radii & shadow */
+      --radius-lg:       18px;
+      --radius-md:       12px;
+      --radius-sm:       8px;
+      --shadow-card:     0 4px 24px rgba(13, 33, 73, 0.10);
+      --shadow-input:    0 2px 8px rgba(13, 33, 73, 0.06);
+      --transition:      all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    /* ── Reset ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Inter', sans-serif;
-      background: var(--bg-gradient);
-      color: var(--text-main);
-      min-height: 100vh;
+      background: var(--page-bg);
+      color: var(--text-body);
+      height: 100vh;          /* fixed — required so flex children can scroll */
+      max-height: 100vh;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
+      justify-content: flex-start;
+      padding: 0;
       overflow: hidden;
-      padding: 20px;
     }
 
-    .ambient-glow-1 {
-      position: absolute;
-      top: -10%;
-      left: -10%;
-      width: 50vw;
-      height: 50vw;
-      background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    .ambient-glow-2 {
-      position: absolute;
-      bottom: -10%;
-      right: -10%;
-      width: 50vw;
-      height: 50vw;
-      background: radial-gradient(circle, rgba(99, 102, 209, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    .chat-container {
+    /* ── Top institutional banner ──────────────────────────── */
+    .top-banner {
       width: 100%;
-      max-width: 950px;
-      height: 85vh;
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-radius: 24px;
-      box-shadow: var(--shadow-primary);
+      background: var(--brand-navy);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 32px;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+
+    .banner-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .banner-crest {
+      width: 40px;
+      height: 40px;
+      background: var(--brand-gold);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: var(--brand-navy);
+      flex-shrink: 0;
+    }
+
+    .banner-title-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .banner-uni-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.01em;
+    }
+
+    .banner-sub {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.6);
+      margin-top: 1px;
+    }
+
+    .banner-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .banner-link {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    .banner-link:hover { color: var(--brand-gold-lt); }
+
+    /* ── Main layout ───────────────────────────────────────── */
+    .app-shell {
+      flex: 1;
+      min-height: 0;          /* allow flex child to shrink below content size */
+      width: 100%;
+      max-width: 1120px;
+      display: flex;
+      padding: 20px;
+      gap: 20px;
+      overflow: hidden;
+    }
+
+    /* ── Sidebar ───────────────────────────────────────────── */
+    .sidebar {
+      width: 260px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+    }
+
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 4px; }
+
+    @media (max-width: 820px) { .sidebar { display: none; } }
+
+    .sidebar-card {
+      background: var(--surface-white);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 18px 16px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .sidebar-card-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--brand-navy);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .sidebar-card-title i {
+      color: var(--brand-gold);
+      font-size: 0.8rem;
+    }
+
+    .suggestion-list {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .suggestion-item {
+      background: var(--surface-soft);
+      border: 1px solid var(--border-subtle);
+      padding: 10px 13px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      text-align: left;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text-body);
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      width: 100%;
+    }
+
+    .suggestion-item i {
+      color: var(--brand-gold);
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+
+    .suggestion-item:hover {
+      background: var(--accent-navy-glow);
+      border-color: var(--brand-navy-mid);
+      color: var(--brand-navy);
+      transform: translateX(3px);
+    }
+
+    /* info card */
+    .info-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 0.8rem;
+    }
+
+    .info-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .info-item i {
+      color: var(--brand-gold);
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .info-item a {
+      color: var(--brand-navy-mid);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .info-item a:hover { text-decoration: underline; }
+
+    .info-label {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+
+    /* ── Chat panel ────────────────────────────────────────── */
+    .chat-panel {
+      flex: 1;
+      min-height: 0;          /* allow shrink so messages-area can scroll */
+      background: var(--surface-white);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      z-index: 10;
-      position: relative;
     }
 
+    /* ── Chat header ───────────────────────────────────────── */
     .chat-header {
-      padding: 20px 28px;
-      border-bottom: 1px solid var(--glass-border);
+      padding: 16px 22px;
+      border-bottom: 1px solid var(--border-subtle);
       display: flex;
+      align-items: center;
       justify-content: space-between;
-      align-items: center;
-      background: rgba(15, 23, 42, 0.4);
+      background: linear-gradient(to right, #f8f9fc, #ffffff);
+      flex-shrink: 0;
     }
 
-    .header-brand {
+    .chat-header-left {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 13px;
     }
 
-    .brand-logo {
-      width: 48px;
-      height: 48px;
-      background: var(--primary-gradient);
-      border-radius: 14px;
+    .bot-avatar-header {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--brand-navy);
       display: flex;
+      align-items: center;
       justify-content: center;
-      align-items: center;
-      color: #fff;
-      font-size: 22px;
-      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.4);
-      animation: pulse-glow 3s infinite alternate;
+      color: var(--brand-gold);
+      font-size: 1.1rem;
+      box-shadow: 0 2px 12px rgba(13,33,73,0.18);
+      flex-shrink: 0;
     }
 
-    .brand-info h1 {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.25rem;
+    .chat-header-info h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem;
       font-weight: 700;
-      letter-spacing: -0.02em;
-      background: linear-gradient(to right, #38bdf8, #818cf8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: var(--brand-navy);
+      letter-spacing: 0.01em;
     }
 
-    .status-indicator {
+    .chat-header-status {
       display: flex;
       align-items: center;
       gap: 6px;
       margin-top: 2px;
     }
 
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: status-pulse 2s infinite;
+    }
+
     .status-text {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: var(--text-muted);
       font-weight: 500;
     }
 
-    .header-actions {
+    .chat-header-actions {
       display: flex;
-      gap: 12px;
+      gap: 8px;
     }
 
     .btn-icon {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--glass-border);
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      color: var(--text-main);
+      background: var(--surface-muted);
+      border: 1px solid var(--border-subtle);
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       cursor: pointer;
-      transition: var(--transition-smooth);
+      font-size: 0.9rem;
+      transition: var(--transition);
     }
 
     .btn-icon:hover {
-      background: rgba(255, 255, 255, 0.12);
-      color: var(--accent-blue);
-      transform: translateY(-2px);
+      background: var(--accent-navy-glow);
+      border-color: var(--brand-navy-mid);
+      color: var(--brand-navy);
     }
 
-    .chat-body-split {
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-    }
-
-    .sidebar {
-      width: 280px;
-      border-right: 1px solid var(--glass-border);
-      padding: 24px;
-      background: rgba(15, 23, 42, 0.25);
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      overflow-y: auto;
-    }
-
-    @media (max-width: 768px) {
-      .sidebar {
-        display: none;
-      }
-    }
-
-    .sidebar-section-title {
-      font-family: 'Outfit', sans-serif;
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-muted);
-      font-weight: 700;
-    }
-
-    .suggestion-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .suggestion-item {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--glass-border);
-      padding: 12px 16px;
-      border-radius: 12px;
-      cursor: pointer;
-      text-align: left;
-      font-size: 0.85rem;
-      font-weight: 500;
-      color: var(--text-main);
-      transition: var(--transition-smooth);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .suggestion-item i {
-      color: var(--accent-blue);
-      font-size: 0.9rem;
-      transition: var(--transition-smooth);
-    }
-
-    .suggestion-item:hover {
-      background: rgba(56, 189, 248, 0.08);
-      border-color: rgba(56, 189, 248, 0.3);
-      transform: translateX(4px);
-    }
-
-    .suggestion-item:hover i {
-      transform: scale(1.15);
-    }
-
-    .chat-main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      background: rgba(15, 23, 42, 0.15);
-    }
-
+    /* ── Messages area ─────────────────────────────────────── */
     .messages-area {
       flex: 1;
-      padding: 28px;
+      min-height: 0;          /* critical: lets flex item shrink so overflow-y triggers */
+      padding: 24px 22px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 18px;
       scroll-behavior: smooth;
+      background: var(--page-bg);
     }
 
-    .messages-area::-webkit-scrollbar,
-    .sidebar::-webkit-scrollbar {
-      width: 6px;
-    }
+    .messages-area::-webkit-scrollbar { width: 5px; }
+    .messages-area::-webkit-scrollbar-track { background: transparent; }
+    .messages-area::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 4px; }
 
-    .messages-area::-webkit-scrollbar-track,
-    .sidebar::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    .messages-area::-webkit-scrollbar-thumb,
-    .sidebar::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-    }
-
-    .messages-area::-webkit-scrollbar-thumb:hover,
-    .sidebar::-webkit-scrollbar-thumb:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
-
+    /* ── Message rows ──────────────────────────────────────── */
     .message-row {
       display: flex;
       align-items: flex-end;
-      gap: 12px;
-      max-width: 80%;
-      animation: message-slide-up 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+      gap: 10px;
+      max-width: 82%;
+      animation: msg-in 0.35s cubic-bezier(0.4,0,0.2,1) both;
     }
 
     .message-row.user-message-row {
@@ -288,106 +395,176 @@
       flex-direction: row-reverse;
     }
 
-    .message-avatar {
-      width: 36px;
-      height: 36px;
+    .message-row.bot-message-row {
+      align-self: flex-start;
+    }
+
+    .msg-avatar {
+      width: 34px;
+      height: 34px;
       border-radius: 10px;
       display: flex;
-      justify-content: center;
       align-items: center;
-      font-size: 0.95rem;
-      color: #fff;
+      justify-content: center;
+      font-size: 0.85rem;
       flex-shrink: 0;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
     }
 
-    .message-avatar.bot-avatar {
-      background: var(--primary-gradient);
-    }
+    .bot-avatar { background: var(--brand-navy); color: var(--brand-gold); }
+    .user-avatar { background: var(--brand-gold); color: var(--brand-navy); }
 
-    .message-avatar.user-avatar {
-      background: #4f46e5;
-    }
-
-    .message-content-wrapper {
+    .msg-content {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
     }
 
     .message-bubble {
-      padding: 14px 18px;
-      border-radius: 18px;
-      font-size: 0.92rem;
-      line-height: 1.5;
+      padding: 13px 17px;
+      border-radius: 16px;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
     }
 
     .bot-message-row .message-bubble {
       background: var(--bot-bubble-bg);
-      color: #f1f5f9;
+      color: var(--text-body);
+      border: 1px solid var(--bot-bubble-border);
       border-bottom-left-radius: 4px;
-      border: 1px solid rgba(255, 255, 255, 0.03);
-      white-space: pre-wrap;
+      box-shadow: 0 2px 8px rgba(13,33,73,0.06);
     }
 
     .user-message-row .message-bubble {
-      background: var(--user-bubble-gradient);
+      background: var(--user-bubble-bg);
       color: #fff;
       border-bottom-right-radius: 4px;
-      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+      box-shadow: 0 4px 16px rgba(13,33,73,0.2);
     }
 
-    .message-meta {
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 2px;
+    .msg-meta {
+      font-size: 0.7rem;
+      color: var(--text-light);
       padding: 0 4px;
     }
 
-    .user-message-row .message-meta {
-      justify-content: flex-end;
-    }
+    .user-message-row .msg-meta { text-align: right; }
 
+    /* ── Typing indicator ──────────────────────────────────── */
     .typing-indicator {
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
+      gap: 5px;
+      padding: 4px 8px;
     }
 
     .typing-dot {
-      width: 7px;
-      height: 7px;
+      width: 6px;
+      height: 6px;
       background: var(--text-muted);
       border-radius: 50%;
-      opacity: 0.6;
       animation: typing-bounce 1.4s infinite ease-in-out both;
     }
 
-    .typing-dot:nth-child(2) {
-      animation-delay: 0.2s;
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    /* ── Welcome card ──────────────────────────────────────── */
+    .welcome-card {
+      background: var(--surface-white);
+      border: 1px solid var(--border-subtle);
+      border-left: 4px solid var(--brand-gold);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      max-width: 520px;
+      box-shadow: var(--shadow-card);
+      animation: msg-in 0.4s cubic-bezier(0.4,0,0.2,1) both;
     }
 
-    .typing-dot:nth-child(3) {
-      animation-delay: 0.4s;
+    .welcome-card-header {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      margin-bottom: 12px;
     }
 
+    .welcome-icon {
+      width: 38px;
+      height: 38px;
+      background: var(--brand-navy);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--brand-gold);
+      font-size: 1rem;
+    }
+
+    .welcome-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--brand-navy);
+    }
+
+    .welcome-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .welcome-topics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .welcome-topic {
+      background: var(--surface-muted);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 7px 10px;
+      font-size: 0.78rem;
+      color: var(--text-body);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      transition: var(--transition);
+      font-family: inherit;
+      text-align: left;
+    }
+
+    .welcome-topic:hover {
+      background: var(--brand-navy);
+      color: #fff;
+      border-color: var(--brand-navy);
+    }
+
+    .welcome-topic:hover i {
+      color: var(--brand-gold-lt);
+    }
+
+    .welcome-topic i { color: var(--brand-gold); font-size: 0.78rem; }
+
+    /* ── Input container ───────────────────────────────────── */
     .input-container {
-      padding: 24px 28px;
-      border-top: 1px solid var(--glass-border);
-      background: rgba(15, 23, 42, 0.4);
+      padding: 16px 20px;
+      border-top: 1px solid var(--border-subtle);
+      background: var(--surface-white);
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
+      flex-shrink: 0;
     }
 
-    .input-form {
+
+
+    /* Input row */
+    .input-row {
       display: flex;
-      gap: 12px;
-      position: relative;
+      gap: 10px;
+      align-items: center;
     }
 
     .input-wrapper {
@@ -397,307 +574,299 @@
 
     .chat-input {
       width: 100%;
-      background: rgba(0, 0, 0, 0.25);
-      border: 1px solid var(--glass-border);
-      padding: 16px 20px;
-      padding-right: 50px;
-      border-radius: 16px;
-      color: var(--text-main);
-      font-size: 0.95rem;
+      background: var(--surface-soft);
+      border: 1.5px solid var(--border-mid);
+      padding: 13px 44px 13px 16px;
+      border-radius: var(--radius-md);
+      color: var(--text-body);
+      font-size: 0.92rem;
       outline: none;
-      transition: var(--transition-smooth);
       font-family: inherit;
+      transition: var(--transition);
     }
+
+    .chat-input::placeholder { color: var(--text-light); }
 
     .chat-input:focus {
-      border-color: var(--accent-blue);
-      box-shadow: 0 0 16px rgba(56, 189, 248, 0.15);
-      background: rgba(0, 0, 0, 0.35);
-    }
-
-    .btn-submit {
-      background: var(--primary-gradient);
-      border: none;
-      width: 52px;
-      height: 52px;
-      border-radius: 16px;
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      font-size: 1.1rem;
-      box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
-      transition: var(--transition-smooth);
-      flex-shrink: 0;
-    }
-
-    .btn-submit:hover {
-      transform: translateY(-2px) scale(1.03);
-      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
-    }
-
-    .btn-submit:active {
-      transform: translateY(1px);
+      border-color: var(--brand-navy-mid);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(13,33,73,0.06);
     }
 
     .chat-input-clear {
       position: absolute;
-      right: 18px;
+      right: 14px;
       top: 50%;
       transform: translateY(-50%);
       background: none;
       border: none;
-      color: var(--text-muted);
+      color: var(--text-light);
+      cursor: pointer;
+      font-size: 0.9rem;
+      display: none;
+      transition: var(--transition);
+      padding: 4px;
+    }
+
+    .chat-input-clear:hover { color: var(--text-body); }
+
+    .btn-submit {
+      background: var(--brand-navy);
+      border: none;
+      width: 46px;
+      height: 46px;
+      border-radius: var(--radius-md);
+      color: var(--brand-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
       font-size: 1rem;
-      display: none;
-      transition: var(--transition-smooth);
+      flex-shrink: 0;
+      transition: var(--transition);
+      box-shadow: 0 3px 10px rgba(13,33,73,0.22);
     }
 
-    .chat-input-clear:hover {
-      color: var(--text-main);
+    .btn-submit:hover {
+      background: var(--brand-navy-mid);
+      transform: translateY(-1px);
+      box-shadow: 0 5px 16px rgba(13,33,73,0.28);
     }
 
-    .mobile-suggestions {
-      display: none;
-      gap: 8px;
-      overflow-x: auto;
-      padding-bottom: 4px;
-    }
-
-    .mobile-suggestions::-webkit-scrollbar {
-      height: 4px;
-    }
-
-    .mobile-suggestions::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 2px;
-    }
-
-    .mobile-pill {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--glass-border);
-      padding: 8px 14px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: 500;
-      white-space: nowrap;
-      color: var(--text-main);
-      cursor: pointer;
-      transition: var(--transition-smooth);
-    }
-
-    .mobile-pill:hover {
-      background: rgba(56, 189, 248, 0.08);
-      border-color: rgba(56, 189, 248, 0.3);
-    }
-
-    @media (max-width: 768px) {
-      .mobile-suggestions {
-        display: flex;
-      }
-    }
+    .btn-submit:active { transform: translateY(1px); }
 
     .input-disclaimer {
-      font-size: 0.72rem;
-      color: var(--text-muted);
+      font-size: 0.69rem;
+      color: var(--text-light);
       text-align: center;
     }
 
-    .input-disclaimer a {
-      color: var(--accent-blue);
-      text-decoration: none;
+    .input-disclaimer a { color: var(--brand-navy-mid); text-decoration: none; }
+    .input-disclaimer a:hover { text-decoration: underline; }
+
+    /* ── Divider ───────────────────────────────────────────── */
+    .date-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.68rem;
+      color: var(--text-light);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
     }
 
-    .input-disclaimer a:hover {
-      text-decoration: underline;
+    .date-divider::before,
+    .date-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-subtle);
     }
 
-    @keyframes message-slide-up {
-      from {
-        opacity: 0;
-        transform: translateY(16px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @keyframes pulse-glow {
-      from {
-        box-shadow: 0 4px 14px rgba(56, 189, 248, 0.3);
-      }
-
-      to {
-        box-shadow: 0 4px 22px rgba(99, 102, 209, 0.6);
-      }
+    /* ── Keyframes ─────────────────────────────────────────── */
+    @keyframes msg-in {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0);    }
     }
 
     @keyframes status-pulse {
-      0% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-      }
-
-      70% {
-        transform: scale(1);
-        box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
-      }
-
-      100% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
-      }
+      0%   { box-shadow: 0 0 0 0 rgba(34,197,94,0.5); }
+      70%  { box-shadow: 0 0 0 5px rgba(34,197,94,0); }
+      100% { box-shadow: 0 0 0 0 rgba(34,197,94,0);   }
     }
 
     @keyframes typing-bounce {
+      0%, 100% { transform: translateY(0);   }
+      50%       { transform: translateY(-5px); }
+    }
 
-      0%,
-      100% {
-        transform: translateY(0);
-      }
-
-      50% {
-        transform: translateY(-5px);
-      }
+    /* ── Responsive ────────────────────────────────────────── */
+    @media (max-width: 560px) {
+      .app-shell { padding: 10px; }
+      .top-banner { padding: 10px 16px; }
+      .banner-right { display: none; }
     }
   </style>
 </head>
 
 <body>
-  <div class="ambient-glow-1"></div>
-  <div class="ambient-glow-2"></div>
 
-  <div class="chat-container">
-    <!-- Header -->
-    <header class="chat-header">
-      <div class="header-brand">
-        <div class="brand-info">
-          <h1>Ask XMUM</h1>
-          <div class="status-indicator">
-            <span class="status-text">Undergraduate Admissions Enquiry</span>
-          </div>
-        </div>
+  <!-- ── Top institutional banner ── -->
+  <div class="top-banner">
+    <div class="banner-left">
+      <div class="banner-crest"><i class="fa-solid fa-graduation-cap"></i></div>
+      <div class="banner-title-group">
+        <span class="banner-uni-name">Xiamen University Malaysia</span>
+        <span class="banner-sub">Undergraduate Admissions Portal</span>
       </div>
-      <div class="header-actions">
-        <button class="btn-icon" id="btn-theme-toggle" title="System Status" onclick="checkAppHealth()">
-          <i class="fa-solid fa-heartbeat"></i>
-        </button>
-        <button class="btn-icon" id="btn-clear-chat" title="Clear Conversation" onclick="clearConversation()">
-          <i class="fa-solid fa-trash-can"></i>
-        </button>
-      </div>
-    </header>
-
-    <!-- Body split -->
-    <div class="chat-body-split">
-      <!-- Sidebar with suggestions -->
-      <aside class="sidebar">
-        <div class="sidebar-section-title">Common Topics</div>
-        <div class="suggestion-list">
-          <button class="suggestion-item" onclick="sendSuggestion('How do I apply to XMUM?')">
-            <i class="fa-solid fa-file-signature"></i>
-            <span>How do I apply?</span>
-          </button>
-          <button class="suggestion-item" onclick="sendSuggestion('What programs are offered at XMUM?')">
-            <i class="fa-solid fa-book-open-reader"></i>
-            <span>Programs Offered</span>
-          </button>
-          <button class="suggestion-item" onclick="sendSuggestion('How much is the tuition fee in XMUM??')">
-            <i class="fa-solid fa-credit-card"></i>
-            <span>Tuition Fees</span>
-          </button>
-          <button class="suggestion-item" onclick="sendSuggestion('What are the entry requirements in XMUM?')">
-            <i class="fa-solid fa-list-check"></i>
-            <span>Entry Requirements</span>
-          </button>
-          <button class="suggestion-item" onclick="sendSuggestion('Are there scholarships available at XMUM?')">
-            <i class="fa-solid fa-award"></i>
-            <span>Scholarships & Aid</span>
-          </button>
-          <button class="suggestion-item" onclick="sendSuggestion('Is there any student accomodation in XMUM?')">
-            <i class="fa-solid fa-hotel"></i>
-            <span>Campus Hostel</span>
-          </button>
-        </div>
-      </aside>
-
-      <!-- Chat screen -->
-      <main class="chat-main">
-        <div class="messages-area" id="messages-area-id">
-          <!-- Welcome message -->
-          <div class="message-row bot-message-row">
-            <div class="message-avatar bot-avatar">
-              <i class="fa-solid fa-robot"></i>
-            </div>
-            <div class="message-content-wrapper">
-              <div class="message-bubble">Hello! Welcome to XMUM's Undergraduate Admissions Assistant.
-
-Ask me anything about:
-    • Admissions & Application Process
-    • Courses & Degree Offerings
-    • Tuition Fees & Enrollment Costs
-    • Scholarships & Financial Aid
-    • Student Accommodation & Campus Life
-              </div>
-              <div class="message-meta">
-                <span>Ask XMUM</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Input area -->
-        <div class="input-container">
-          <!-- Mobile suggestions scrollbar -->
-          <div class="mobile-suggestions">
-            <div class="mobile-pill" onclick="sendSuggestion('How do I apply?')">Apply Process</div>
-            <div class="mobile-pill" onclick="sendSuggestion('What courses are available?')">Available Programs</div>
-            <div class="mobile-pill" onclick="sendSuggestion('How much is the tuition fee?')">Fees</div>
-            <div class="mobile-pill" onclick="sendSuggestion('What are the scholarship requirements?')">Scholarships
-            </div>
-            <div class="mobile-pill" onclick="sendSuggestion('Where is XMUM campus located?')">Location</div>
-          </div>
-
-          <!-- Input form -->
-          <form class="input-form" id="chat-form" onsubmit="handleChatSubmit(event)">
-            <div class="input-wrapper">
-              <input type="text" class="chat-input" id="user-input-field" placeholder="Type your question about XMUM..."
-                autocomplete="off" oninput="toggleClearButton()" />
-              <button type="button" class="chat-input-clear" id="chat-clear-btn" onclick="clearInputField()">
-                <i class="fa-solid fa-xmark"></i>
-              </button>
-            </div>
-            <button type="submit" class="btn-submit" id="btn-submit-id" title="Send message">
-              <i class="fa-solid fa-paper-plane"></i>
-            </button>
-          </form>
-
-          <div class="input-disclaimer">
-            Official website: <a href="https://www.xmu.edu.my" target="_blank">www.xmu.edu.my</a> | Contact: <a
-              href="mailto:admissions@xmu.edu.my">admissions@xmu.edu.my</a>
-          </div>
-        </div>
-      </main>
+    </div>
+    <div class="banner-right">
+      <a href="https://www.xmu.edu.my" target="_blank" class="banner-link">
+        <i class="fa-solid fa-globe" style="margin-right:5px;"></i>xmu.edu.my
+      </a>
+      <a href="mailto:admissions@xmu.edu.my" class="banner-link">
+        <i class="fa-solid fa-envelope" style="margin-right:5px;"></i>admissions@xmu.edu.my
+      </a>
     </div>
   </div>
 
+  <!-- ── App shell ── -->
+  <div class="app-shell">
+
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar">
+      <!-- Quick Topics -->
+      <div class="sidebar-card">
+        <div class="sidebar-card-title">
+          <i class="fa-solid fa-compass"></i> Quick Topics
+        </div>
+        <div class="suggestion-list">
+          <button class="suggestion-item" onclick="sendSuggestion('How do I apply to XMUM?')">
+            <i class="fa-solid fa-file-signature"></i><span>How do I apply?</span>
+          </button>
+          <button class="suggestion-item" onclick="sendSuggestion('What undergraduate programs are offered at XMUM?')">
+            <i class="fa-solid fa-book-open-reader"></i><span>Programs Offered</span>
+          </button>
+          <button class="suggestion-item" onclick="sendSuggestion('How much is the tuition fee at XMUM?')">
+            <i class="fa-solid fa-credit-card"></i><span>Tuition Fees</span>
+          </button>
+          <button class="suggestion-item" onclick="sendSuggestion('What are the entry requirements at XMUM?')">
+            <i class="fa-solid fa-list-check"></i><span>Entry Requirements</span>
+          </button>
+          <button class="suggestion-item" onclick="sendSuggestion('Are there scholarships available at XMUM?')">
+            <i class="fa-solid fa-award"></i><span>Scholarships &amp; Aid</span>
+          </button>
+          <button class="suggestion-item" onclick="sendSuggestion('Is there student accommodation at XMUM?')">
+            <i class="fa-solid fa-building"></i><span>Student Accommodation</span>
+          </button>
+          <button class="suggestion-item" onclick="sendSuggestion('Where is XMUM located?')">
+            <i class="fa-solid fa-location-dot"></i><span>Campus Location</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Contact Info -->
+      <div class="sidebar-card">
+        <div class="sidebar-card-title">
+          <i class="fa-solid fa-circle-info"></i> Contact &amp; Links
+        </div>
+        <div class="info-item">
+          <i class="fa-solid fa-globe"></i>
+          <div>
+            <div class="info-label">Official Website</div>
+            <a href="https://www.xmu.edu.my" target="_blank">www.xmu.edu.my</a>
+          </div>
+        </div>
+        <div class="info-item">
+          <i class="fa-solid fa-envelope"></i>
+          <div>
+            <div class="info-label">Admissions Email</div>
+            <a href="mailto:admissions@xmu.edu.my">admissions@xmu.edu.my</a>
+          </div>
+        </div>
+        <div class="info-item">
+          <i class="fa-solid fa-location-dot"></i>
+          <div>
+            <div class="info-label">Campus</div>
+            <span style="font-size:0.8rem;color:var(--text-body);">Sepang, Selangor, Malaysia</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── Chat panel ── -->
+    <div class="chat-panel">
+
+      <!-- Chat header -->
+      <header class="chat-header">
+        <div class="chat-header-left">
+          <div class="bot-avatar-header"><i class="fa-solid fa-robot"></i></div>
+          <div class="chat-header-info">
+            <h1>Ask XMUM</h1>
+            <div class="chat-header-status">
+              <div class="status-dot"></div>
+              <span class="status-text">Admissions Assistant · Online</span>
+            </div>
+          </div>
+        </div>
+        <div class="chat-header-actions">
+          <button class="btn-icon" id="btn-clear-chat" title="Clear Conversation" onclick="clearConversation()">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Messages -->
+      <div class="messages-area" id="messages-area-id">
+
+        <div class="date-divider">Today</div>
+
+        <!-- Welcome card -->
+        <div class="welcome-card">
+          <div class="welcome-card-header">
+            <div class="welcome-icon"><i class="fa-solid fa-robot"></i></div>
+            <div>
+              <div class="welcome-title">Welcome to Ask XMUM</div>
+              <div class="welcome-sub">Undergraduate Admissions Assistant</div>
+            </div>
+          </div>
+          <p style="font-size:0.85rem;color:var(--text-body);margin-bottom:12px;line-height:1.55;">
+            Hello! I'm here to help with your enquiries about Xiamen University Malaysia. You can ask me about:
+          </p>
+          <div class="welcome-topics">
+            <button class="welcome-topic" onclick="sendSuggestion('Tell me about admissions')"><i class="fa-solid fa-file-signature"></i> Admissions</button>
+            <button class="welcome-topic" onclick="sendSuggestion('What programs are offered?')"><i class="fa-solid fa-book-open-reader"></i> Programs</button>
+            <button class="welcome-topic" onclick="sendSuggestion('What are the tuition fees?')"><i class="fa-solid fa-credit-card"></i> Tuition Fees</button>
+            <button class="welcome-topic" onclick="sendSuggestion('Are there scholarships available?')"><i class="fa-solid fa-award"></i> Scholarships</button>
+            <button class="welcome-topic" onclick="sendSuggestion('Is there student accommodation?')"><i class="fa-solid fa-building"></i> Accommodation</button>
+            <button class="welcome-topic" onclick="sendSuggestion('Tell me about campus life')"><i class="fa-solid fa-location-dot"></i> Campus Life</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Input area -->
+      <div class="input-container">
+        <form class="input-row" id="chat-form">
+          <div class="input-wrapper">
+            <input
+              type="text"
+              class="chat-input"
+              id="user-input-field"
+              placeholder="Ask a question about XMUM admissions…"
+              autocomplete="off"
+              oninput="toggleClearButton()"
+            />
+            <button type="button" class="chat-input-clear" id="chat-clear-btn" onclick="clearInputField()">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <button type="submit" class="btn-submit" id="btn-submit-id" title="Send message">
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </form>
+
+        <div class="input-disclaimer">
+          This assistant uses AI to answer common questions. For official guidance visit
+          <a href="https://www.xmu.edu.my" target="_blank">xmu.edu.my</a> or email
+          <a href="mailto:admissions@xmu.edu.my">admissions@xmu.edu.my</a>
+        </div>
+      </div>
+    </div><!-- /chat-panel -->
+
+  </div><!-- /app-shell -->
+
   <script>
-    const messagesArea = document.getElementById('messages-area-id');
+    const messagesArea  = document.getElementById('messages-area-id');
     const userInputField = document.getElementById('user-input-field');
-    const chatForm = document.getElementById('chat-form');
-    const clearBtn = document.getElementById('chat-clear-btn');
+    const chatForm      = document.getElementById('chat-form');
+    const clearBtn      = document.getElementById('chat-clear-btn');
     let isWaiting = false;
 
+    /* ── Helpers ─────────────────────────────────────────── */
     function toggleClearButton() {
-      if (userInputField.value.trim().length > 0) {
-        clearBtn.style.display = 'block';
-      } else {
-        clearBtn.style.display = 'none';
-      }
+      clearBtn.style.display = userInputField.value.trim().length > 0 ? 'block' : 'none';
     }
 
     function clearInputField() {
@@ -706,29 +875,15 @@ Ask me anything about:
       userInputField.focus();
     }
 
-    function clearConversation() {
-      if (confirm("Are you sure you want to clear the chat history?")) {
-        // Remove all messages except the first welcome message
-        const welcomeMsg = messagesArea.firstElementChild;
-        messagesArea.innerHTML = '';
-        if (welcomeMsg) {
-          messagesArea.appendChild(welcomeMsg);
-        }
-      }
+    function getTime() {
+      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
-    async function checkAppHealth() {
-      try {
-        const response = await fetch('/health');
-        const data = await response.json();
-        if (data.status === 'ok') {
-          alert(`System Health: OK\nModels Loaded: ${data.models_loaded}`);
-        } else {
-          alert('System reporting unexpected health status.');
-        }
-      } catch (error) {
-        console.error('Health check failed:', error);
-        alert('Could not connect to the API. Server might be offline.');
+    function clearConversation() {
+      if (confirm('Clear the conversation? This cannot be undone.')) {
+        messagesArea.innerHTML = '';
+        addDateDivider();
+        appendWelcomeCard();
       }
     }
 
@@ -736,40 +891,69 @@ Ask me anything about:
       if (isWaiting) return;
       userInputField.value = text;
       toggleClearButton();
-      chatForm.dispatchEvent(new Event('submit', { cancelable: true }));
+      // bubbles:true is required so the submit listener on the form fires
+      chatForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
     }
 
-    function appendMessage(text, isUser) {
+    /* ── DOM builders ────────────────────────────────────── */
+    function addDateDivider() {
+      const d = document.createElement('div');
+      d.className = 'date-divider';
+      d.textContent = 'Today';
+      messagesArea.appendChild(d);
+    }
+
+    function appendWelcomeCard() {
+      const html = `
+        <div class="welcome-card">
+          <div class="welcome-card-header">
+            <div class="welcome-icon"><i class="fa-solid fa-robot"></i></div>
+            <div>
+              <div class="welcome-title">Welcome to Ask XMUM</div>
+              <div class="welcome-sub">Undergraduate Admissions Assistant</div>
+            </div>
+          </div>
+          <p style="font-size:0.85rem;color:var(--text-body);margin-bottom:12px;line-height:1.55;">
+            Hello! I'm here to help with your enquiries about Xiamen University Malaysia.
+          </p>
+          <div class="welcome-topics">
+            <button class="welcome-topic" onclick="sendSuggestion('Tell me about admissions')"><i class="fa-solid fa-file-signature"></i> Admissions</button>
+            <button class="welcome-topic" onclick="sendSuggestion('What programs are offered?')"><i class="fa-solid fa-book-open-reader"></i> Programs</button>
+            <button class="welcome-topic" onclick="sendSuggestion('What are the tuition fees?')"><i class="fa-solid fa-credit-card"></i> Tuition Fees</button>
+            <button class="welcome-topic" onclick="sendSuggestion('Are there scholarships available?')"><i class="fa-solid fa-award"></i> Scholarships</button>
+            <button class="welcome-topic" onclick="sendSuggestion('Is there student accommodation?')"><i class="fa-solid fa-building"></i> Accommodation</button>
+            <button class="welcome-topic" onclick="sendSuggestion('Tell me about campus life')"><i class="fa-solid fa-location-dot"></i> Campus Life</button>
+          </div>
+        </div>`;
+      const wrap = document.createElement('div');
+      wrap.innerHTML = html.trim();
+      messagesArea.appendChild(wrap.firstElementChild);
+      messagesArea.scrollTop = messagesArea.scrollHeight;
+    }
+
+    function appendMessage(text, isUser, matchedQuestion) {
       const row = document.createElement('div');
       row.className = `message-row ${isUser ? 'user-message-row' : 'bot-message-row'}`;
 
       const avatar = document.createElement('div');
-      avatar.className = `message-avatar ${isUser ? 'user-avatar' : 'bot-avatar'}`;
+      avatar.className = `msg-avatar ${isUser ? 'user-avatar' : 'bot-avatar'}`;
       avatar.innerHTML = isUser ? '<i class="fa-solid fa-user"></i>' : '<i class="fa-solid fa-robot"></i>';
 
-      const wrapper = document.createElement('div');
-      wrapper.className = 'message-content-wrapper';
+      const content = document.createElement('div');
+      content.className = 'msg-content';
 
       const bubble = document.createElement('div');
       bubble.className = 'message-bubble';
       bubble.textContent = text;
-
-      wrapper.appendChild(bubble);
+      content.appendChild(bubble);
 
       const meta = document.createElement('div');
-      meta.className = 'message-meta';
-
-      if (isUser) {
-        meta.innerHTML = '<span>You</span>';
-      } else {
-        meta.innerHTML = '<span>Ask XMUM</span>';
-      }
-
-      wrapper.appendChild(meta);
+      meta.className = 'msg-meta';
+      meta.textContent = `${isUser ? 'You' : 'Ask XMUM'} · ${getTime()}`;
+      content.appendChild(meta);
 
       row.appendChild(avatar);
-      row.appendChild(wrapper);
-
+      row.appendChild(content);
       messagesArea.appendChild(row);
       messagesArea.scrollTop = messagesArea.scrollHeight;
     }
@@ -780,24 +964,23 @@ Ask me anything about:
       row.id = 'typing-indicator-row';
 
       const avatar = document.createElement('div');
-      avatar.className = 'message-avatar bot-avatar';
+      avatar.className = 'msg-avatar bot-avatar';
       avatar.innerHTML = '<i class="fa-solid fa-robot"></i>';
 
-      const wrapper = document.createElement('div');
-      wrapper.className = 'message-content-wrapper';
+      const content = document.createElement('div');
+      content.className = 'msg-content';
 
       const bubble = document.createElement('div');
       bubble.className = 'message-bubble';
 
-      const indicator = document.createElement('div');
-      indicator.className = 'typing-indicator';
-      indicator.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+      const ind = document.createElement('div');
+      ind.className = 'typing-indicator';
+      ind.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
 
-      bubble.appendChild(indicator);
-      wrapper.appendChild(bubble);
+      bubble.appendChild(ind);
+      content.appendChild(bubble);
       row.appendChild(avatar);
-      row.appendChild(wrapper);
-
+      row.appendChild(content);
       messagesArea.appendChild(row);
       messagesArea.scrollTop = messagesArea.scrollHeight;
     }
@@ -807,50 +990,42 @@ Ask me anything about:
       if (el) el.remove();
     }
 
-    async function handleChatSubmit(event) {
-      event.preventDefault();
-      if (isWaiting) return;
-
+    /* ── Chat submit ─ wired via addEventListener (not inline) ── */
+    chatForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
       const text = userInputField.value.trim();
-      if (!text) return;
+      if (!text || isWaiting) return;
+
+      isWaiting = true;
+      document.getElementById('btn-submit-id').disabled = true;
 
       appendMessage(text, true);
       clearInputField();
-
-      isWaiting = true;
       showTypingIndicator();
 
       try {
-        const response = await fetch('/chat', {
+        const res  = await fetch('/chat', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: text })
         });
-
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-
-        const result = await response.json();
+        const data = await res.json();
         removeTypingIndicator();
 
-        if (result.error) {
-          appendMessage(`Error: ${result.error}`, false);
+        if (data.error) {
+          appendMessage(`Error: ${data.error}`, false, null);
         } else {
-          appendMessage(result.answer, false);
+          appendMessage(data.answer, false, data.matched_question || null);
         }
-
-      } catch (error) {
-        console.error('Chat error:', error);
+      } catch (err) {
         removeTypingIndicator();
-        appendMessage("Sorry, I encountered a communication error with the server. Please verify the Flask server is running.", false);
+        appendMessage('Sorry, I could not reach the server. Please try again.', false, null);
       } finally {
         isWaiting = false;
+        document.getElementById('btn-submit-id').disabled = false;
+        userInputField.focus();
       }
-    }
+    });
   </script>
 </body>
-
 </html>
